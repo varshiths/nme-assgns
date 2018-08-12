@@ -149,7 +149,8 @@ def main():
         plt.plot(np.arange(M)*delta, V[mn], label="Current: %s"%(currents[model][0]))
         plt.legend(loc='upper right', shadow=True)
         if mn % 3 == 2:
-            plt.savefig("Q3.%d.png"%(mn-2))
+            pass
+            # plt.savefig("Q3.%d.png"%(mn-2))
 
     # plt.show()
 

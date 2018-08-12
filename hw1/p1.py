@@ -38,6 +38,7 @@ def initalize_current():
 	inp = np.ones((N, M))
 
 	ic = LIF_tc()
+	# print(ic)
 
 	for k in range(1, N+1):
 		inp[k-1, :] = (1+k*alpha)*ic
@@ -64,30 +65,35 @@ def runge_kutta_2_and_reset(Y, func):
 
 def main():
 
-	# pdb.set_trace()
-	
+	# nitialise based on `\alpha` and `k`
 	I = initalize_current()
 	V = initalize_voltage(I)
+	# final values in matrix V
 	V = runge_kutta_2_and_reset(V, func=lambda V, t: LIF(V, I[:, t]))
 
+	# final values stored in output.dat in csv format
+	np.savetxt("Q1.output.dat", V, delimiter=",")
+
+	# compute the frequency of the spikes
 	base_currents = I[:, 0]
 	tps = np.argwhere((V == El).astype(int))
 
 	adels = []
 	for i in range(N):
-		# pdb.set_trace()
 		tpss = (tps[tps[:, 0] == i][:, 1]).astype(float)
 		adels.append(np.mean(np.ediff1d(tpss)) * delta)
 
-	plt.figure(0)
 	for i in range(2, N, 2):
+		plt.figure()
 		plt.plot(np.arange(M)*delta, V[i-1], label="Neuron: %d"%i)
-	plt.legend(loc='upper right', shadow=True)
+		plt.legend(loc='upper right', shadow=True)
+		plt.savefig("Q1.n%d.png"%i)
 
-	plt.figure(1)
+	plt.figure()
 	plt.plot(base_currents, adels)
+	plt.savefig("Q1.avg.png")
 
-	plt.show()
+	# plt.show()
 
 if __name__ == '__main__':
 	main()

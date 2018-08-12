@@ -73,8 +73,10 @@ def IZH_ssU(model):
     return _p["b"]*(IZH_ssV(model) - _p["Er"])
 
 def initalize_models_and_current():
-    ctypes = np.array([400e-12]*3 + [500e-12]*3 + [600e-12]*3)
-    models = [Model.RS, Model.IB, Model.CH]*3
+    # ctypes = np.array([400e-12]*3 + [500e-12]*3 + [600e-12]*3)
+    # models = [Model.RS, Model.IB, Model.CH]*3
+    ctypes = np.array([400e-12, 500e-12, 600e-12]*3)
+    models = [Model.RS]*3 + [Model.IB]*3 + [Model.CH]*3
     models = list(zip(models, ctypes))
 
     cvals = np.tile(ctypes, (M, 1)).transpose()
@@ -118,6 +120,11 @@ def runge_kutta_4_sim_and_reset(U, V, f, g, models):
 
 def main():
 
+    # for model in [Model.RS, Model.IB, Model.CH]:
+    #     print(model)
+    #     print("U", IZH_ssU(model))
+    #     print("V", IZH_ssV(model))
+
     models, currents = initalize_models_and_current()
     jmodels = [x for x, y in models]
     U, V = initalize_U_V(jmodels)
@@ -141,10 +148,12 @@ def main():
     for mn, model in enumerate(models):
         if mn % 3 == 0:
             plt.figure()
-        plt.plot(np.arange(M)*delta, V[mn], label="Neuron: %s Current: %s"%(model, currents[model][0]))
+        plt.plot(np.arange(M)*delta, V[mn], label="Current: %s"%(currents[model][0]))
         plt.legend(loc='upper right', shadow=True)
+        if mn % 3 == 2:
+            plt.savefig("Q2.%d.png"%(mn-2))
 
-    plt.show()
+    # plt.show()
 
 if __name__ == '__main__':
     main()

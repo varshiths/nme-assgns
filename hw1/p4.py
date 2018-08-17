@@ -4,156 +4,228 @@ from enum import Enum
 import numpy as np
 import pdb as pdb
 
+from scipy.optimize import newton as NR
+
 import matplotlib.pyplot as plt
 
-class Model(Enum):
-    RS = 1
-    IB = 2
-    CH = 3
+SI = False
 
-configs = {
-    Model.RS : {
-        "C"     : 200   * 1e-12  ,
-        "gL"    : 10    * 1e-9   ,
-        "El"    : -70   * 1e-3   ,
-        "Vt"    : -50   * 1e-3   ,
-        "delT"  : 2     * 1e-3   ,
-        "a"     : 2     * 1e-9   ,
-        "tw"    : 30    * 1e-3   ,
-        "b"     : 0     * 1e-12  ,
-        "Vr"    : -58   * 1e-3   ,
-    },
-    Model.IB : {
-        "C"     : 130   * 1e-12  ,
-        "gL"    : 18    * 1e-9   ,
-        "El"    : -58   * 1e-3   ,
-        "Vt"    : -50   * 1e-3   ,
-        "delT"  : 2     * 1e-3   ,
-        "a"     : 4     * 1e-9   ,
-        "tw"    : 150   * 1e-3   ,
-        "b"     : 120   * 1e-12  ,
-        "Vr"    : -50   * 1e-3   ,
-    },
-    Model.CH : {
-        "C"     : 200   * 1e-12  ,
-        "gL"    : 10    * 1e-9   ,
-        "El"    : -58   * 1e-3   ,
-        "Vt"    : -50   * 1e-3   ,
-        "delT"  : 2     * 1e-3   ,
-        "a"     : 2     * 1e-9   ,
-        "tw"    : 120   * 1e-3   ,
-        "b"     : 100   * 1e-12  ,
-        "Vr"    : -46   * 1e-3   ,
-    },
-}
+C       =    1 * 1e-6
+ENa     =   50 * 1e-3
+EK      =  -77 * 1e-3
+El      =  -55 * 1e-3
+gNa     =  120 * 1e-3
+gK      =   36 * 1e-3
+gl      =  0.3 * 1e-3
 
-T = 500e-3
-delta = 0.1e-3
-M = int(T/delta)
+def HH_V(V, n, m, h, I):
+    return ( -iNa(V, m, h) -iK(V, n) -il(V) + I ) / C
+def iNa(V, m, h):
+    return gNa * m**3 * h * (V-ENa)
+def iK(V, n):
+    return gK * n**4 * (V-EK)
+def il(V):
+    return gl * (V-El)
 
-def AEF_V(U, V, I, model):
-    '''Returns the value of f given v(t), i(t)
-    for equation involving voltage 
+def HH_n(V, n):
+    return alpha_n(V)*(1-n) - beta_n(V)*(n)
+def HH_m(V, m):
+    return alpha_m(V)*(1-m) - beta_m(V)*(m)
+def HH_h(V, h):
+    return alpha_h(V)*(1-h) - beta_h(V)*(h)
+
+def inm(x):
+    # return x
+    return 1000 * x
+def alpha_n(V):
+    V = inm(V)
+    return ( 0.01*(V+55) )/( 1 - np.exp( -(V+55)/10 ) )
+def alpha_m(V):
+    V = inm(V)
+    return ( 0.1*(V+40) )/( 1 - np.exp( -(V+40)/10 ) )
+def alpha_h(V):
+    V = inm(V)
+    return 0.07*np.exp( -0.05*(V+65) )
+
+def beta_n(V):
+    V = inm(V)
+    return 0.125*np.exp( -(V+65)/80 )
+def beta_m(V):
+    V = inm(V)
+    return 4.0*np.exp( -0.0556*(V+65) )
+def beta_h(V):
+    V = inm(V)
+    return 1.0 / ( 1 + np.exp( -0.1 * (V+35) ) )
+
+
+def sse_V(V):
     '''
-    _p = configs[model]
-    return ( -_p["gL"]*(V-_p["El"]) + _p["gL"]*_p["delT"]*np.exp((V-_p["Vt"])/_p["delT"]) - U + I )/_p["C"]
-
-def AEF_U(U, V, model):
-    '''Returns the value of f given v(t), i(t)
-    for equation involving U value function 
+    Equation whose equation is steady state value for f(V) = 0
     '''
-    _p = configs[model]
-    return (_p["a"]*(V-_p["El"])-U)/_p["tw"]
+    n = HH_ss_n(V)
+    m = HH_ss_m(V)
+    h = HH_ss_h(V)
+    return HH_V(V, n, m, h, 0)
 
-def AEF_ssV(model):
-    _p = configs[model]
-    return _p["El"] + AEF_ssU(model)/_p["a"]
-def AEF_ssU(model):
-    _p = configs[model]
-    return _p["gL"]*(_p["El"] - _p["Vt"] + _p["delT"])
+val_ss_V = None
+def HH_ss_V():
+    global val_ss_V
+    if val_ss_V is not None:
+        return val_ss_V
 
-def initalize_models_and_current():
-    # ctypes = np.array([250e-12]*3 + [350e-12]*3 + [450e-12]*3)
-    # models = [Model.RS, Model.IB, Model.CH]*3
-    
-    ctypes = np.array([250e-12, 350e-12, 450e-12]*3)
-    models = [Model.RS]*3 + [Model.IB]*3 + [Model.CH]*3
+    initV = 0.0
+    val_ss_V = NR(sse_V, initV)
+    return val_ss_V
 
-    models = list(zip(models, ctypes))
+'''
+All three functions below
+If V is None, return at steady state V
+else return m, n, p at the value V assuming steady state
+'''
+def HH_ss_n(V=None):
+    if V is None:
+        V = HH_ss_V()
+    return alpha_n(V) / ( alpha_n(V) + beta_n(V) )
+def HH_ss_m(V=None):
+    if V is None:
+        V = HH_ss_V()
+    return alpha_m(V) / ( alpha_m(V) + beta_m(V) )
+def HH_ss_h(V=None):
+    if V is None:
+        V = HH_ss_V()
+    return alpha_h(V) / ( alpha_h(V) + beta_h(V) )
 
-    cvals = np.tile(ctypes, (M, 1)).transpose()
-    currents = { x: y for x, y in zip(models, cvals)}
-    return models, currents
+N = 1
+Io          = 15    * 1e-6
+FT          = 300  * 1e-3
+T           = 30    * 1e-3
+delta       = 0.01  * 1e-3
+M = int(FT/delta)
+HM = int(T/delta)
 
-def initalize_U_V(models):
-    N = len(models)
-    U = np.zeros((N, M))
+def initalize_current():
+    currents = np.zeros((N, M))
+    # currents[:, :] = Io
+    currents[:, 2*HM:3*HM] = Io
+    return currents
+
+def initalize_V_n_m_h():
     V = np.zeros((N, M))
-    initUs = [ AEF_ssU(model) for model in models ]
-    initVs = [ AEF_ssV(model) for model in models ]
-    U[:, 0] = initUs
-    V[:, 0] = initVs
-    return U, V
+    n = np.zeros((N, M))
+    m = np.zeros((N, M))
+    h = np.zeros((N, M))
 
-def euler_sim_and_reset(U, V, f, g, models):
+    V[:, 0] = HH_ss_V()
+    n[:, 0] = HH_ss_n()
+    m[:, 0] = HH_ss_m()
+    h[:, 0] = HH_ss_h()
+    return V, n, m, h
 
-    def f_and_g(*args):
-        return f(*args), g(*args)
+def euler_sim(V, n, m, h, I):
 
     for i in range(1, M):
-        for mn, model in enumerate(models):
-            
-            k, l = f_and_g(U[mn, i-1], V[mn, i-1], i-1, model)
-            U[mn, i] = U[mn, i-1] + delta*k
-            V[mn, i] = V[mn, i-1] + delta*l
 
-            reset = (V[mn, i] >= 0).astype(int)
-            rest_U_add = configs[model[0]]["b"]
-            rest_V = configs[model[0]]["Vr"]
+        tV = V[:, i-1]
+        tn = n[:, i-1]
+        tm = m[:, i-1]
+        th = h[:, i-1]
+        tI = I[:, i-1]
 
-            U[mn, i] = rest_U_add*reset + U[mn, i]
-            V[mn, i] = rest_V*reset + V[mn, i]*(1-reset)
+        # if i % 10000 == 0:
+            # print("Euler: %d/%d, values: "%(i, M), tV, tn, tm, th, tI)
 
-    return U, V
+        V[:, i] = tV + delta * HH_V(tV, tn, tm, th, tI)
+        n[:, i] = tn + delta * HH_n(tV, tn)
+        m[:, i] = tm + delta * HH_m(tV, tm)
+        h[:, i] = th + delta * HH_h(tV, th)     
+
+    return V, n, m, h
+
+def ion_currents(V, n, m, h):
+    return iNa(V, m, h), iK(V, n), il(V)
+def power(V, cNa, cK, cl, I):
+    pT = V * ( -cNa -cK -cl + I )
+    pNa = cNa * ( V-ENa )
+    pK  = cK  * ( V-EK  )
+    pl  = cl  * ( V-El  )
+    return pNa, pK, pl, pT
+
+def integrate(power):
+    
+    E = np.zeros(N)
+    for i in range(M):
+        E += power[:, i-1]
+    return E
+
+def energy(rNa, rK, rl, rT):
+
+    area = 1e-8
+    eNa     = integrate(rNa) * area
+    eK      = integrate(rK) * area
+    el      = integrate(rl) * area
+    eT      = integrate(rT) * area
+    return eNa, eK, el, eT
 
 def main():
 
-    for model in [Model.RS, Model.IB, Model.CH]:
-        print(model)
-        print("U ", AEF_ssU(model))
-        print("V ", AEF_ssV(model))
+    currents = initalize_current()
+    V, n, m, h = initalize_V_n_m_h()
 
-    models, currents = initalize_models_and_current()
-    jmodels = [x for x, y in models]
-    U, V = initalize_U_V(jmodels)
-    
-    def get_curr(I, t):
-        if isinstance(t, int):
-            return I[t]
-        else:
-            v1 = I[int(t)]
-            v2 = I[int(t)+1]
-            weight = t - int(t)
-            return v2*weight + v1*(1-weight)
+    # print("Steady State Values")
+    # print("V: ", V[0, 0])
+    # print("n: ", n[0, 0])
+    # print("m: ", m[0, 0])
+    # print("h: ", h[0, 0])
 
-    U, V = euler_sim_and_reset(
-        U, V,
-        f=lambda U, V, t, model: AEF_U(U, V, model[0]),
-        g=lambda U, V, t, model: AEF_V(U, V, get_curr(currents[model], t), model[0]),
-        models=models,
-        )
+    # import pdb; pdb.set_trace()
+    V, n, m, h = euler_sim( V, n, m, h, currents )
+    cNa, cK, cl = ion_currents(V, n, m, h)
 
-    for mn, model in enumerate(models):
-        if mn % 3 == 0:
-            plt.figure()
-        plt.plot(np.arange(M)*delta, V[mn], label="Current: %s"%(currents[model][0]))
-        plt.legend(loc='upper right', shadow=True)
-        if mn % 3 == 2:
-            pass
-            # plt.savefig("Q3.%d.png"%(mn-2))
+    rNa, rK, rl, rT = power(V, cNa, cK, cl, currents)
+    eNa, eK, el, eT = energy(rNa, rK, rl, rT)
 
-    # plt.show()
+    # print("Energy Values")
+    # print("Na: ", eNa)
+    # print("K: ", eK)
+    # print("l: ", el)
+    # print("T: ", eT)
+
+    plt.figure()
+    plt.title("Membrane Potential")
+    plt.plot(np.arange(M)*delta, V[0])
+    plt.xlabel("time (s)")
+    plt.ylabel("voltage (V)")
+    plt.savefig("Q4.1.png")
+
+    plt.figure()
+    plt.title("Ion Currents")
+    plt.plot(np.arange(M)*delta, cNa[0], label="Na")
+    plt.plot(np.arange(M)*delta, cK[0], label="K")
+    plt.plot(np.arange(M)*delta, cl[0], label="l")
+    plt.legend(loc='upper right', shadow=True)
+    plt.xlabel("time (s)")
+    plt.ylabel("current (A)")
+    plt.savefig("Q4.2.png")
+
+    plt.figure()
+    plt.title("Power Dissipated")
+    plt.plot(np.arange(M)*delta, rT[0], label="Capacitor(membrane)")
+    plt.plot(np.arange(M)*delta, rNa[0], label="Na")
+    plt.plot(np.arange(M)*delta, rK[0], label="K")
+    plt.plot(np.arange(M)*delta, rl[0], label="l")
+    plt.legend(loc='upper right', shadow=True)
+    plt.xlabel("time (s)")
+    plt.ylabel("power (watts)")
+    plt.savefig("Q4.3.png")
+
+    # plt.figure()
+    # plt.plot(np.arange(M)*delta, n[0], label="n")
+    # plt.plot(np.arange(M)*delta, m[0], label="m")
+    # plt.plot(np.arange(M)*delta, h[0], label="h")
+    # plt.legend(loc='upper right', shadow=True)
+    # plt.savefig("Q4.3.png")
+
+
 
 if __name__ == '__main__':
     main()
-    # pass

@@ -4,6 +4,8 @@ from enum import Enum
 import numpy as np
 import pdb as pdb
 
+from scipy.optimize import newton as NR
+
 import matplotlib.pyplot as plt
 
 class Model(Enum):
@@ -65,12 +67,23 @@ def AEF_U(U, V, model):
     _p = configs[model]
     return (_p["a"]*(V-_p["El"])-U)/_p["tw"]
 
+ssV = {}
 def AEF_ssV(model):
+    global ssV
+    if model in ssV.keys():
+        return ssV[model]
+
     _p = configs[model]
-    return _p["El"] + AEF_ssU(model)/_p["a"]
+    ssV_f = lambda x: AEF_V( _p["a"]*(x-_p["El"]), x, 0, model )
+
+    initV = 0
+    val = NR(ssV_f, 0, tol=1e-8)
+    ssV[model] = val
+    return val
+
 def AEF_ssU(model):
     _p = configs[model]
-    return _p["gL"]*(_p["El"] - _p["Vt"] + _p["delT"])
+    return _p["a"] * ( AEF_ssV(model) - _p["El"] )
 
 def initalize_models_and_current():
     # ctypes = np.array([250e-12]*3 + [350e-12]*3 + [450e-12]*3)
@@ -118,10 +131,10 @@ def euler_sim_and_reset(U, V, f, g, models):
 
 def main():
 
-    for model in [Model.RS, Model.IB, Model.CH]:
-        print(model)
-        print("U ", AEF_ssU(model))
-        print("V ", AEF_ssV(model))
+    # for model in [Model.RS, Model.IB, Model.CH]:
+    #     print(model)
+    #     print("U ", AEF_ssU(model))
+    #     print("V ", AEF_ssV(model))
 
     models, currents = initalize_models_and_current()
     jmodels = [x for x, y in models]
@@ -144,12 +157,15 @@ def main():
         )
 
     for mn, model in enumerate(models):
-        if mn % 3 == 0:
-            plt.figure()
-        plt.plot(np.arange(M)*delta, V[mn], label="Current: %s"%(currents[model][0]))
-        plt.legend(loc='upper right', shadow=True)
-        if mn % 3 == 2:
-            plt.savefig("Q3.%d.png"%(mn-2))
+        # if mn % 3 == 0:
+        plt.figure()
+        plt.title( "Model: %s Current: %s"%(model[0], currents[model][0]) )
+        plt.plot(np.arange(M)*delta, V[mn])
+        plt.xlabel("time (s)")
+        plt.ylabel("voltage (V)")
+        # plt.legend(loc='upper right', shadow=True)
+        # if mn % 3 == 2:
+        plt.savefig("Q3.%d.png"%(mn))
 
     # plt.show()
 

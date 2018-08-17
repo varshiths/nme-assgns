@@ -71,9 +71,6 @@ def main():
 	# final values in matrix V
 	V = runge_kutta_2_and_reset(V, func=lambda V, t: LIF(V, I[:, t]))
 
-	# final values stored in output.dat in csv format
-	np.savetxt("Q1.output.dat", V, delimiter=",")
-
 	# compute the frequency of the spikes
 	base_currents = I[:, 0]
 	tps = np.argwhere((V == El).astype(int))
@@ -85,12 +82,17 @@ def main():
 
 	for i in range(2, N, 2):
 		plt.figure()
-		plt.plot(np.arange(M)*delta, V[i-1], label="Neuron: %d"%i)
-		plt.legend(loc='upper right', shadow=True)
+		plt.title("Potential of Neuron %d"%i)
+		plt.plot(np.arange(M)*delta, V[i-1])
+		plt.xlabel("time (s)")
+		plt.ylabel("voltage (V)")
 		plt.savefig("Q1.n%d.png"%i)
 
 	plt.figure()
+	plt.title("Average Time Period")
 	plt.plot(base_currents, adels)
+	plt.ylabel("time period (s)")
+	plt.xlabel("current (A)")
 	plt.savefig("Q1.avg.png")
 
 	# plt.show()

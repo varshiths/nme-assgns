@@ -146,12 +146,15 @@ def main():
         )
 
     for mn, model in enumerate(models):
-        if mn % 3 == 0:
-            plt.figure()
-        plt.plot(np.arange(M)*delta, V[mn], label="Current: %s"%(currents[model][0]))
-        plt.legend(loc='upper right', shadow=True)
-        if mn % 3 == 2:
-            plt.savefig("Q2.%d.png"%(mn-2))
+        # if mn % 3 == 0:
+        plt.figure()
+        plt.title("Model: %s Current: %s"%(model[0], currents[model][0]))
+        plt.plot(np.arange(M)*delta, V[mn])
+        plt.xlabel("time (s)")
+        plt.ylabel("voltage (V)")
+        # plt.legend(loc='upper right', shadow=True)
+        # if mn % 3 == 2:
+        plt.savefig("Q2.%d.png"%(mn))
 
     # plt.show()
 

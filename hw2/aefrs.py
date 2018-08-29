@@ -98,38 +98,34 @@ def initalize_models_and_current():
     currents = { x: y for x, y in zip(models, cvals)}
     return models, currents
 
-def initalize_U_V(models, M):
-    N = len(models)
-    U = np.zeros((N, M))
-    V = np.zeros((N, M))
-    initUs = [ AEF_ssU(model) for model in models ]
-    initVs = [ AEF_ssV(model) for model in models ]
-    U[:, 0] = initUs
-    V[:, 0] = initVs
+def initalize_U_V(model, M):
+    U = np.zeros((M))
+    V = np.zeros((M))
+    U[0] = AEF_ssU(model)
+    V[0] = AEF_ssV(model)
     return U, V
 
-def euler_sim_and_reset(U, V, f, g, models):
+def euler_sim_and_reset(U, V, f, g, model):
 
     def f_and_g(*args):
         return f(*args), g(*args)
 
+    M = U.shape[0]
     for i in range(1, M):
-        for mn, model in enumerate(models):
-            
-            k, l = f_and_g(U[mn, i-1], V[mn, i-1], i-1, model)
-            U[mn, i] = U[mn, i-1] + delta*k
-            V[mn, i] = V[mn, i-1] + delta*l
+        k, l = f_and_g(U[i-1], V[i-1], i-1, model)
+        U[i] = U[i-1] + delta*k
+        V[i] = V[i-1] + delta*l
 
-            reset = (V[mn, i] >= 0).astype(int)
-            rest_U_add = configs[model[0]]["b"]
-            rest_V = configs[model[0]]["Vr"]
+        reset = (V[i] >= 0).astype(int)
+        rest_U_add = configs[model]["b"]
+        rest_V = configs[model]["Vr"]
 
-            U[mn, i] = rest_U_add*reset + U[mn, i]
-            V[mn, i] = rest_V*reset + V[mn, i]*(1-reset)
+        U[i] = rest_U_add*reset + U[i]
+        V[i] = rest_V*reset + V[i]*(1-reset)
 
     return U, V
 
-def get_U_V(U, V, models, currents):
+def get_U_V(U, V, model, current):
 
     def get_curr(I, t):
         if isinstance(t, int):
@@ -142,31 +138,9 @@ def get_U_V(U, V, models, currents):
 
     U, V = euler_sim_and_reset(
         U, V,
-        f=lambda U, V, t, model: AEF_U(U, V, model[0]),
-        g=lambda U, V, t, model: AEF_V(U, V, get_curr(currents[model], t), model[0]),
-        models=models,
+        f=lambda U, V, t, model: AEF_U(U, V, model),
+        g=lambda U, V, t, model: AEF_V(U, V, get_curr(current, t), model),
+        model=model,
         )
 
     return U, V
-
-def main():
-
-    # for model in [Model.RS, Model.IB, Model.CH]:
-    #     print(model)
-    #     print("U ", AEF_ssU(model))
-    #     print("V ", AEF_ssV(model))
-
-    models, currents = initalize_models_and_current()
-    jmodels = [x for x, y in models]
-    U, V = initalize_U_V(jmodels, M)
-    U, V = get_U_V(U, V, models, currents)
-    
-    for mn, model in enumerate(models):
-        plt.figure()
-        plt.title( "Model: %s Current: %s"%(model[0], currents[model][0]) )
-        plt.plot(np.arange(M)*delta, V[mn])
-        plt.xlabel("time (s)")
-        plt.ylabel("voltage (V)")
-        plt.savefig("Q3.%d.png"%(mn))
-
-    # plt.show()

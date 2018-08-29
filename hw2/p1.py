@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 from aefrs import Model, initalize_U_V, get_U_V
 
-np.random.seed(0)
+# np.random.seed(0)
 
 T = 500e-3
 delta = 0.1e-3
@@ -17,7 +17,7 @@ M = int(T/delta)
 
 def get_spike_train():
 
-    opt = lda / float(M)
+    opt = np.exp(-lda*delta) * lda*delta
     op = np.random.uniform(size=(M))
 
     train = (op <= opt).astype(np.float32)
@@ -34,27 +34,32 @@ def get_current_through_synapse(spikes):
 
     current = np.zeros(M)
 
+    si = 0
+    nsp = spikes.shape[0]
+
+    cspks = []
     for i in range(M):
-        cspks = spikes[ spikes < i ]
-        current[i] = Io * we * \
-            np.sum( np.exp(-(i-cspks)/tau) - np.exp(-(i-cspks)/taus) )
+
+        if si < nsp and spikes[si] == i-1:
+            cspks.append(spikes[si])
+            si += 1
+
+        _cspks = np.array(cspks)
+        exps = np.exp(-(i-_cspks)*delta/tau) - np.exp(-(i-_cspks)*delta/taus)
+        current[i] = Io * we * np.sum( exps )
 
     return current
 
 def main():
 
     train, spikes = get_spike_train()
+    print("Spikes:", spikes)
     current = get_current_through_synapse(spikes)
 
-    current[:] = 0
-
-    model = (Model.RS, None)
-    currents = {
-        model : current
-    }
-    U, V = initalize_U_V([model[0]], M)
-    U, V = get_U_V(U, V, [model], currents)
-    U, V = U[0], V[0]
+    model = Model.RS
+    U, V = initalize_U_V(model, M)
+    U, V = get_U_V(U, V, model, current)
+    U, V = U, V
 
     fig, (ax1, ax2) = plt.subplots(2, 1)
     plt.xlabel("time (s)")

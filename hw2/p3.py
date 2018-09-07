@@ -85,7 +85,7 @@ def train_synapses(we, vr, spikes):
     deltk = deltk.astype(np.float32)
 
     delwe = we * GAMMA * ( np.exp(-deltk*delta/tau) - np.exp(-deltk*delta/taus) ) * mask
-    return np.clip(we+delwe, None, WE_MAX), delwe, deltk, mask
+    return np.clip(we+delwe, None, WE_MAX), delwe[mask == 1], deltk[mask == 1]
 
 def plot_curr_and_resp(current, V, filen):
 
@@ -102,10 +102,7 @@ def plot_curr_and_resp(current, V, filen):
 
     fig.savefig(filen)
 
-def plot_learning_scatter(delwk, deltk, mask, _iter, filen="Q3.png"):
-
-    delwk = delwk[mask == 1]
-    deltk = deltk[mask == 1]
+def plot_learning_scatter(delwk, deltk, _iter, filen="Q3.png"):
 
     plt.xlabel("time (s)")
     plt.ylabel("change in synapse weight")
@@ -134,8 +131,8 @@ def main():
     _iter = 0 
     while len(_aspikes) == 0:
         _iter+=1; print("Iteration:", _iter)
-        wsn, delwk, deltk, mask = train_synapses(wsn, V, spikes)
-        plot_learning_scatter( delwk, deltk, mask, _iter )
+        wsn, delwk, deltk = train_synapses(wsn, V, spikes)
+        plot_learning_scatter( delwk, deltk, _iter )
         currenti = get_cumulative_current(spikes, wsn)
         _, V, _aspikes = get_U_V(initU, initV, model, currenti)
     print("Required number of iterations:", _iter)

@@ -102,7 +102,7 @@ def plot_curr_and_resp(current, V, filen):
 
     fig.savefig(filen)
 
-def plot_learning_scatter(delwk, deltk, _iter, filen="Q3.png"):
+def plot_learning_scatter(delwk, deltk, _iter, filen):
 
     plt.xlabel("time (s)")
     plt.ylabel("change in synapse weight")
@@ -127,16 +127,18 @@ def main():
     wsn = wsi
     currenti = get_cumulative_current(spikes, wsi)
     _, V, _aspikes = get_U_V(initU, initV, model, currenti)
+    # plot_curr_and_resp(currenti, V, "Q3.a.png")
 
     _iter = 0 
     while len(_aspikes) == 0:
         _iter+=1; print("Iteration:", _iter)
         wsn, delwk, deltk = train_synapses(wsn, V, spikes)
-        plot_learning_scatter( delwk, deltk, _iter )
+        plot_learning_scatter( delwk, deltk, _iter, "Q3.b.png" )
         currenti = get_cumulative_current(spikes, wsn)
         _, V, _aspikes = get_U_V(initU, initV, model, currenti)
+
     print("Required number of iterations:", _iter)
-    print("Weights of synapses:", wsn)
+    plot_curr_and_resp(currenti, V, "Q3.a.png")
 
 if __name__ == '__main__':
     main()

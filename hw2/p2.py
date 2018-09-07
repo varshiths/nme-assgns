@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 from aefrs import Model, initalize_U_V, get_U_V
 
-# np.random.seed(0)
+np.random.seed(0)
 
 N = 100
 
@@ -100,8 +100,8 @@ def main():
     print("Spikes: %d, w_mean: %f, w_std: %f" % (len(_x0), w0, sigma0))
     print("Spikes: %d, w_mean: %f, w_std: %f" % (len(_x1), w1, sigma1))
 
-    plot_curr_and_resp( current0, V0, "Q2.0.png" )
-    plot_curr_and_resp( current1, V1, "Q2.1.png" )
+    plot_curr_and_resp( current0, V0, "Q2.a.png" )
+    plot_curr_and_resp( current1, V1, "Q2.b.png" )
 
 if __name__ == '__main__':
     main()

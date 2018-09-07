@@ -1,4 +1,4 @@
-# Homework 1
+# Homework 2
 ## EE746 Neuromorphic Engineering
 ### Autumn 2018
 
@@ -9,203 +9,140 @@ Vikash Kumar Meena
 150110050
 
 Note:  
-To run any of files `p1.py`, `p2.py`, `p3.py`, `p4.py`:  
+To run any of files `p1.py`, `p2.py`, `p3.py`, `p4.py`, `p5.py`:  
 ```
 $ python3 <file>
 ``` 
 
-#### Q1  
+#### Q1
+
+The seed here is set to 3. Change the seed to observe effect across random initializations.  
 
 a.  
 
-The expression for steady state value of the membrane potential on constant current $I_{o}$ is:  
-$V_{ss}=\frac{I_{o}}{g_{L}} + E_{L}$  
-
-The minimum value of steady state current to issue a spike is:  
-$I_{c}=g_{L}(V_{T}-E_{L})$  
-
-For the given values,  
-$I_{c}=2.7nA$
+The time instants when the stimuli occur are:  
+0.0218 0.2221 0.2429 0.2473 0.2542 0.404  
 
 b.  
 
-Refer to the file `p1.py` for code.  
-The function that computes the potential is `runge_kutta_2_and_reset`.  
+The response for second setting is in `Q1.b.png`.
 
-c.  
+![Response](Q1.b.png ){width=75%}
 
-The code stores the output in the matrix `V`.
-The plots are contained in the files `Q1.n2.png`, `Q1.n4.png`, `Q1.n6.png`, `Q1.n8.png` produced by the program.
+Number of spikes are:  
+11  
 
-![Neuron 2](Q1.n2.png "N2"){width=50%}
-
-![Neuron 4](Q1.n4.png "N4"){width=50%}
-
-![Neuron 6](Q1.n6.png "N6"){width=50%}
-
-![Neuron 8](Q1.n8.png "N8"){width=50%}
-
-
-d.  
-
-The code in `p1.py` also produces `Q1.avg.png`. This file has the variation of average time period with current.  
-
-![Average Time Period](Q1.avg.png "Avg Time Period"){width=50%}
 
 #### Q2
 
+The seed here is set to 0. Change the seed to observe effect across random initializations.  
+
 a.  
 
-The expression for the steady state values for U, V are:  
-$V_{ss}=E_{t}-\frac{b}{k_{z}}$  
-$U_{ss}=b(E_{t}-E_{r})+\frac{b^{2}}{k_{z}}$  
+The response for first setting is in `Q2.a.png`.
 
-Their values for different types of neurons are:  
+![Response](Q2.a.png ){width=75%}
 
-type 		RS			IB			CH
---			--			--			--
-U(SV)		-3.42e-11	1.70e-10	2.06e-11
-V(mV)		-42.85		-40.83		-39.33
---			--			--			--
+Number of spikes are:  
+0  
 
 b.  
 
-The difference equations of the simultaneous equations are:  
+The response for second setting is in `Q2.b.png`.
 
-$U_{t}-U_{t-1}=\Delta t * (k_{1}+2k_{2}+2k_{3}+k_{4})/6$  
-$V_{t}-V_{t-1}=\Delta t * (l_{1}+2l_{2}+2l_{3}+l_{4})/6$  
+![Response](Q2.b.png ){width=75%}
 
-where; 
-
-$k1 = f(U_{t-1}, V_{t-1})$  
-$l1 = g(U_{t-1}, V_{t-1}, I_{t-1})$  
-
-$k2 = f(U_{t-1} + \Delta t * k1/2, V_{t-1} + \Delta t * l1/2)$  
-$l2 = g(U_{t-1} + \Delta t * k1/2, V_{t-1} + \Delta t * l1/2, I_{t-0.5})$  
-
-$k3 = f(U_{t-1} + \Delta t * k2/2, V_{t-1} + \Delta t * l2/2)$  
-$l3 = g(U_{t-1} + \Delta t * k2/2, V_{t-1} + \Delta t * l2/2, I_{t-0.5})$  
-
-$k4 = f(U_{t-1} + \Delta t * k3, V_{t-1} + \Delta t * l3)$  
-$l4 = g(U_{t-1} + \Delta t * k3, V_{t-1} + \Delta t * l3, I_{t})$  
-
-and;
-
-$f(u, v) = a ( b (v - E_{t}) - u )$  
-$g(u, v, i) = k_{z} ( v - E_{r} ) (v - E_{t}) - u + i$  
-
-Note: Increment of one in the above timescale implies an increment of $\Delta t$ in actual time.
-
-c.  
-
-The code is contained in the file `p2.py`. The iterative solution is implemented in the function `runge_kutta_4_sim_and_reset`. The code produces plots into the files `Q2.*.png`.  
-
-![src](Q2.0.png){width=75%}
-
-![src](Q2.1.png){width=75%}
-
-![src](Q2.2.png){width=75%}
-
-![src](Q2.3.png){width=75%}
-
-![src](Q2.4.png){width=75%}
-
-![src](Q2.5.png){width=75%}
-
-![src](Q2.6.png){width=75%}
-
-![src](Q2.7.png){width=75%}
-
-![src](Q2.8.png){width=75%}
+Number of spikes are:  
+11  
 
 #### Q3
 
-a.
+The seed here is set to 2. Change the seed to observe effect across random initializations.  
+a.  
 
-The difference equations of the simultaneous equations are:  
-<!-- 
-k, l = f_and_g(U[mn, i-1], V[mn, i-1], i-1, model)
-U[mn, i] = U[mn, i-1] + delta*k
-V[mn, i] = V[mn, i-1] + delta*l
- -->
+The weights for the tasks are contained in the variable `wsn` at the end of the code block.  
 
-$U_{t}-U_{t-1}=\Delta t * k$  
-$V_{t}-V_{t-1}=\Delta t * l$
+The response after causing spikes is in `Q3.a.png`.
 
-where;
+![Response](Q3.a.png ){width=75%}
 
-$k1 = f(U_{t-1}, V_{t-1})$  
-$l1 = g(U_{t-1}, V_{t-1}, I_{t-1})$  
-
-and;
-
-$f(u, v) = a (v - E_{t}) - u$  
-$g(u, v, i) = -g_{L}(v-E_{L}) + g_{L} \Delta_{T}exp(\frac{v-V_{T}}{\Delta_{T}}) - u + i$  
-
-Note: Increment of one in the above timescale implies an increment of $\Delta t$ in actual time.
+Number of iterations are:  
+4  
 
 b.  
 
-The values of U, V for different types of neurons are:  
+The scatter plot for $\delta w_{k}, \delta t_{k}$ across synapses and iterations is available in `Q3.b.png`  
 
-type 		RS			IB			CH
---			--			--			--
-U(SV)		5.09e-11	4.79e-11	2.38e-11
-V(mV)		-44.5		-46.0		-46.1
---			--			--			--
-
-c.  
-
-The code is contained in the file `p3.py`. The iterative solution is implemented in the function `euler_sim_and_reset`. The code produces plots into the files `Q3.*.png`.  
-
-![src](Q3.0.png){width=75%}
-
-![src](Q3.1.png){width=75%}
-
-![src](Q3.2.png){width=75%}
-
-![src](Q3.3.png){width=75%}
-
-![src](Q3.4.png){width=75%}
-
-![src](Q3.5.png){width=75%}
-
-![src](Q3.6.png){width=75%}
-
-![src](Q3.7.png){width=75%}
-
-![src](Q3.8.png){width=75%}
+![Scatter Plot](Q3.b.png ){width=75%}
 
 
 #### Q4
 
+The seed here is set to 2. Change the seed to observe effect across random initializations.  
+
+a.  
+
+The weights for the tasks are contained in the variable `wsn` at the end of the code block.  
+
+The response after killing spikes is in `Q4.a.png`.
+
+![Response](Q4.a.png ){width=75%}
+
+Average number of iterations are:  
+2.5  
+
+The above result are after running for the seeds:  
+2, 0, 100, 20, 25, 30  
+2.5 is average of 3, 2, 3, 3, 2, 2  
+
+
+b.  
+
+The scatter plot for $\delta w_{k}, \delta t_{k}$ across synapses and iterations is available in `Q4.b.png`  
+
+![Scatter Plot](Q4.b.png ){width=75%}
+
+
+#### Q5
+
+The weights for any of the tasks are contained in the variable `wsn` at the end of the code block for that task.  
+The seed here is set. Change the seed to observe effect across random initializations.  
+
 a.
 
-The membrane potential is plot in the file `Q4.1.png` while the ion currents are plot in `Q4.2.png`.  
+The response for S1 is in `Q5.a.1.png`.  
+The response for S2 is in `Q5.a.2.png`.  
 
-Membrane Potential
-![Membrane Potential](Q4.1.png ){width=75%}
+S1 Response
+![S1 Response](Q5.a.1.png ){width=75%}
 
-Ion Currents
-![Ion Currents](Q4.2.png ){width=75%}
-
-The code in conatined in the file `p4.py` and the function that implements the iteration is `euler_sim`.  
+S2 Response
+![S2 Response](Q5.a.2.png ){width=75%}
 
 b.
 
-The power dissipated per unit area is plot in the file `Q4.3.png`.
+The response for S2 with changed weights after removing the spikes is in the file `Q5.b.2.png`  
 
-Power Dissipated
-![Power Dissipated](Q4.3.png ){width=75%}
+S2 Response after train
+![S2 Response after train](Q5.b.2.png ){width=75%}
 
 c.  
 
-The dissipated by the ion currents and the energy spent to charge/discharge the membrane are as follows.
+The response for S1 and S2 after causing spikes for S1 and removing spikes for S2 are as follows  
 
-channel			Energy(J)
---				--		
-Na				3.61278438e-10
-K				1.06092303e-10
-leak			3.90637506e-11
-Membr.			3.8193537e-14
---				--		
+S1 Response after train
+![S1 Response after train](Q5.c.1.png ){width=75%}
+
+S2 Response after train
+![S2 Response after train](Q5.c.2.png ){width=75%}
+
+d.  
+
+The response for S1 and S2 after removing spikes for S1 and causing spikes for S2 are as follows  
+
+S1 Response after train
+![S1 Response after train](Q5.d.1.png ){width=75%}
+
+S2 Response after train
+![S2 Response after train](Q5.d.2.png ){width=75%}
+

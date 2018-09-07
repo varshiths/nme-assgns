@@ -6,13 +6,15 @@ import pdb as pdb
 import matplotlib.pyplot as plt
 
 from aefrs import Model, initalize_U_V, get_U_V
+from p3 import train_synapses
+from p4 import train_d_synapses
 
 np.random.seed(2)
 
 N = 100
 
-w0 = 250 
-sigma0 = 25 
+w0 = 200 
+sigma0 = 20 
 
 WE_MIN=10.0
 GAMMA=1.0
@@ -127,28 +129,112 @@ def plot_learning_scatter(delwk, deltk, _iter, filen="Q4.png"):
 
 def main():
 
-    train, spikes = get_spike_train()
-    # print("Stimulus:", spikes)
+    _, spikes1 = get_spike_train()
+    _, spikes2 = get_spike_train()
+    # print("S1:", spikes1)
+    # print("S2:", spikes2)
 
-    wsi = np.random.normal(loc=w0, scale=sigma0, size=(N))
+    ws0 = np.random.normal(loc=w0, scale=sigma0, size=(N))
     model = Model.RS
     initU, initV = initalize_U_V(model, M, True)
 
-    wsn = wsi
-    currenti = get_cumulative_current(spikes, wsi)
-    _, V, _aspikes = get_U_V(initU, initV, model, currenti)
+    print("Q5.a")
+    currenti1 = get_cumulative_current(spikes1, ws0)
+    _, V1, aspikes1 = get_U_V(initU, initV, model, currenti1)
+    currenti2 = get_cumulative_current(spikes2, ws0)
+    _, V2, aspikes2 = get_U_V(initU, initV, model, currenti2)
+    plot_curr_and_resp( currenti1, V1, "Q5.a.1.png" )
+    plot_curr_and_resp( currenti2, V2, "Q5.a.2.png" )
 
-    _iter = 0 
-    while len(_aspikes) != 0:
-        _iter+=1; print("Iteration:", _iter)
-        wsn, delwk, deltk = train_d_synapses(wsn, spikes=spikes, effect=_aspikes)
-        plot_learning_scatter( delwk, deltk, _iter )
-        currenti = get_cumulative_current(spikes, wsn)
-        _, V, _aspikes = get_U_V(initU, initV, model, currenti)
-        # plot_curr_and_resp( currenti, V, "Q4.1.png" )
-    # plot_curr_and_resp( currenti, V, "Q4.1.png" )
-    print("Required number of iterations:", _iter)
-    print("Weights of synapses:", wsn)
+    print("Q5.b")
+    print("Removing spikes for S2")
+    wsn = ws0
+    while len(aspikes2) != 0:
+        wsn, _, _ = train_d_synapses(wsn, spikes=spikes2, effect=aspikes2)
+        currenti2 = get_cumulative_current(spikes2, wsn)
+        _, V2, aspikes2 = get_U_V(initU, initV, model, currenti2)
+        plot_curr_and_resp( currenti2, V2, "Q5.b.2.png" )
+
+    print("Q5.c")
+    print("Causing spikes for S1 and removing spikes for S2")
+    # main learning loop
+    wsn = ws0
+    currenti1 = get_cumulative_current(spikes1, wsn)
+    _, V1, aspikes1 = get_U_V(initU, initV, model, currenti1)
+    currenti2 = get_cumulative_current(spikes2, wsn)
+    _, V2, aspikes2 = get_U_V(initU, initV, model, currenti2)
+
+    while len(aspikes1) == 0 or len(aspikes2) != 0:
+
+        currenti1 = get_cumulative_current(spikes1, wsn)
+        _, _, aspikes1 = get_U_V(initU, initV, model, currenti1)
+        while len(aspikes1) == 0:
+            wsn, _, _ = train_synapses(wsn, spikes=spikes1, effect=aspikes1)
+            currenti1 = get_cumulative_current(spikes1, wsn)
+            _, _, aspikes1 = get_U_V(initU, initV, model, currenti1)
+        print("Causing spikes for S1")
+
+        currenti2 = get_cumulative_current(spikes2, wsn)
+        _, _, aspikes2 = get_U_V(initU, initV, model, currenti2)
+        while len(aspikes2) != 0:
+            wsn, _, _ = train_d_synapses(wsn, spikes=spikes2, effect=aspikes2)
+            currenti2 = get_cumulative_current(spikes2, wsn)
+            _, _, aspikes2 = get_U_V(initU, initV, model, currenti2)
+        print("Removed spikes for S2")
+
+        currenti1 = get_cumulative_current(spikes1, wsn)
+        _, V1, aspikes1 = get_U_V(initU, initV, model, currenti1)
+        currenti2 = get_cumulative_current(spikes2, wsn)
+        _, V2, aspikes2 = get_U_V(initU, initV, model, currenti2)
+
+    plot_curr_and_resp( currenti1, V1, "Q5.c.1.png" )
+    plot_curr_and_resp( currenti2, V2, "Q5.c.2.png" )
+    
+    print("Q5.d")
+    print("Removing spikes for S1 and causing spikes for S2")
+    # main learning loop
+    wsn = ws0
+    currenti1 = get_cumulative_current(spikes1, wsn)
+    _, V1, aspikes1 = get_U_V(initU, initV, model, currenti1)
+    currenti2 = get_cumulative_current(spikes2, wsn)
+    _, V2, aspikes2 = get_U_V(initU, initV, model, currenti2)
+
+    while len(aspikes1) != 0 or len(aspikes2) == 0:
+
+        currenti1 = get_cumulative_current(spikes1, wsn)
+        _, _, aspikes1 = get_U_V(initU, initV, model, currenti1)
+        while len(aspikes1) != 0:
+            wsn, _, _ = train_d_synapses(wsn, spikes=spikes1, effect=aspikes1)
+            currenti1 = get_cumulative_current(spikes1, wsn)
+            _, _, aspikes1 = get_U_V(initU, initV, model, currenti1)
+        print("Removed spikes for S1")
+
+        currenti2 = get_cumulative_current(spikes2, wsn)
+        _, _, aspikes2 = get_U_V(initU, initV, model, currenti2)
+        while len(aspikes2) == 0:
+            wsn, _, _ = train_synapses(wsn, spikes=spikes2, effect=aspikes2)
+            currenti2 = get_cumulative_current(spikes2, wsn)
+            _, _, aspikes2 = get_U_V(initU, initV, model, currenti2)
+        print("Caused spikes for S2")
+
+        currenti1 = get_cumulative_current(spikes1, wsn)
+        _, V1, aspikes1 = get_U_V(initU, initV, model, currenti1)
+        currenti2 = get_cumulative_current(spikes2, wsn)
+        _, V2, aspikes2 = get_U_V(initU, initV, model, currenti2)
+
+    plot_curr_and_resp( currenti1, V1, "Q5.d.1.png" )
+    plot_curr_and_resp( currenti2, V2, "Q5.d.2.png" )
+
+    # _iter = 0 
+    # while len(_aspikes) != 0:
+    #     _iter+=1; print("Iteration:", _iter)
+    #     wsn, delwk, deltk = train_d_synapses(wsn, spikes=spikes, effect=_aspikes)
+    #     plot_learning_scatter( delwk, deltk, _iter )
+    #     currenti = get_cumulative_current(spikes, wsn)
+    #     _, V, _aspikes = get_U_V(initU, initV, model, currenti)
+    #     # plot_curr_and_resp( currenti, V, "Q4.1.png" )
+    # print("Required number of iterations:", _iter)
+    # print("Weights of synapses:", wsn)
 
 if __name__ == '__main__':
     main()

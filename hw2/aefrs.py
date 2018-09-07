@@ -98,11 +98,11 @@ def initalize_models_and_current():
     currents = { x: y for x, y in zip(models, cvals)}
     return models, currents
 
-def initalize_U_V(model, M):
+def initalize_U_V(model, M, force=False):
     U = np.zeros((M))
     V = np.zeros((M))
-    U[0] = AEF_ssU(model)
-    V[0] = AEF_ssV(model)
+    U[0] = AEF_ssU(model) if not force else configs[model]["b"]
+    V[0] = AEF_ssV(model) if not force else configs[model]["El"]
     return U, V
 
 def euler_sim_and_reset(U, V, f, g, model):
@@ -110,6 +110,7 @@ def euler_sim_and_reset(U, V, f, g, model):
     def f_and_g(*args):
         return f(*args), g(*args)
 
+    nspikes = []
     M = U.shape[0]
     for i in range(1, M):
         k, l = f_and_g(U[i-1], V[i-1], i-1, model)
@@ -123,9 +124,14 @@ def euler_sim_and_reset(U, V, f, g, model):
         U[i] = rest_U_add*reset + U[i]
         V[i] = rest_V*reset + V[i]*(1-reset)
 
-    return U, V
+        nspikes += [i]*reset
 
-def get_U_V(U, V, model, current):
+    return U, V, nspikes
+
+def get_U_V(_U, _V, model, current):
+
+    U = _U.copy()
+    V = _V.copy()
 
     def get_curr(I, t):
         if isinstance(t, int):
@@ -136,11 +142,11 @@ def get_U_V(U, V, model, current):
             weight = t - int(t)
             return v2*weight + v1*(1-weight)
 
-    U, V = euler_sim_and_reset(
+    U, V, spikes = euler_sim_and_reset(
         U, V,
         f=lambda U, V, t, model: AEF_U(U, V, model),
         g=lambda U, V, t, model: AEF_V(U, V, get_curr(current, t), model),
         model=model,
         )
 
-    return U, V
+    return U, V, spikes

@@ -53,20 +53,23 @@ def get_current_through_synapse(spikes):
 def main():
 
     train, spikes = get_spike_train()
-    print("Spikes:", spikes)
+    print("Stimulus:", spikes)
     current = get_current_through_synapse(spikes)
 
     model = Model.RS
-    U, V = initalize_U_V(model, M)
-    U, V = get_U_V(U, V, model, current)
-    U, V = U, V
+    U, V = initalize_U_V(model, M, True)
+    U, V, _x = get_U_V(U, V, model, current)
+
+    print("Spikes: ", _x)
 
     fig, (ax1, ax2) = plt.subplots(2, 1)
     plt.xlabel("time (s)")
 
+    ax1.set_ylim([-0.5*1e-10, 7.5*1e-10])
     ax1.set_title("Current through synapse (A)")
     ax1.plot(np.arange(M)*delta, current)
 
+    ax2.set_ylim([-75*1e-3, 0])
     ax2.set_title("Posterior Neuron Response (V)")
     ax2.plot(np.arange(M)*delta, V)
 

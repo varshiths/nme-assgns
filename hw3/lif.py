@@ -44,5 +44,4 @@ def get_voltage_ref_spikes(V_, I, refraction):
 
     refraction = (refraction-1)*(1-nrmask) + RpT*smask*nrmask
 
-    spikers = np.where(smask)[0]
-    return V, refraction, spikers
+    return V, refraction, smask

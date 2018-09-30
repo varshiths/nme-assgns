@@ -10,7 +10,6 @@ from lif import initalize_V, get_voltage_ref_spikes
 np.random.seed(3)
 
 iI = 50e-9
-w0 = 3000
 
 Io = 1e-12
 tau = 15e-3
@@ -20,14 +19,14 @@ T = 100e-3
 delta = 0.1e-3
 M = int(T/delta)
 
-N = 5
-
 def get_connectivity_matrices(N):
     ''' returns weights and delays in indices
     '''
 
     weights = np.zeros((N, N))
     delays = np.zeros((N, N))
+
+    w0 = 3000
 
     # b->a
     weights[1, 0] = w0
@@ -105,6 +104,7 @@ def curr_due_to_prespikes(weights, delays, spikes, i):
 def simulate_network(V, current, weights, delays):
     V = V.copy()
     current = current.copy()
+    N = weights.shape[0]
 
     spikes = [ [] for i in range(N) ]
     refraction = np.zeros((N))
@@ -122,13 +122,14 @@ def simulate_network(V, current, weights, delays):
             )
 
         V[:, i] = Vi
-        for spiker in spikers:
+        for spiker in np.where(spikers)[0]:
             spikes[spiker].append(i)
 
     return V, current
 
 def main():
 
+    N = 5
     weights, delays = get_connectivity_matrices(N)
 
     current1, current2 = get_initial_external_currents(N)

@@ -14,8 +14,12 @@ from lif import initalize_V, get_voltage_ref_spikes
 np.random.seed(3)
 os.system("taskset -p 0xff %d" % os.getpid())
 
+# learning parameters
+Aup = 0.01
+Adown = -0.02
+_tauL = 20e-3
+
 iI = 50e-9
-w0 = 3000
 
 Io = 1e-12
 tau = 15e-3
@@ -27,6 +31,7 @@ T = 1000e-3
 delta = 0.1e-3
 # delta = 1e-3
 
+tauL = _tauL // delta
 M = int(T/delta)
 
 alpha_tau = None
@@ -136,7 +141,7 @@ def get_connectivity_matrices_P1(N):
 
     return weights, delays
 
-def get_connectivity_matrices(N):
+def get_connectivity_matrices(N, we, wi):
     ''' returns weights and delays in indices
     '''
 
@@ -150,10 +155,10 @@ def get_connectivity_matrices(N):
     for i in range(N):
         if i < e8:
             choice = np.random.choice(N, e1, replace=False)
-            weights[i, choice] = w0
+            weights[i, choice] = we
         else:
             choice = np.random.choice(e8, e1, replace=False)
-            weights[i, choice] = -w0
+            weights[i, choice] = -wi
 
     delays[:e8, :] = np.random.randint(low=1, high=int(20e-3/delta), size=(e8, N))
     delays[e8:, :] = int(1e-3/delta)
@@ -165,7 +170,6 @@ def get_current_due_to_postspikes(weights, ispikes, ispikers, t):
     current = np.zeros(weights.shape[0])
 
     frame = int(tau/delta)
-    # frame = int(5*tau/delta)
 
     for pn in range(weights.shape[0]):
 
@@ -184,11 +188,16 @@ def get_current_due_to_postspikes(weights, ispikes, ispikers, t):
 
     return current
 
-def simulate_network(V, current, weights, delays):
+def simulate_network_and_learn(V, current, weights, delays):
     V = V.copy()
     current = current.copy()
+    weights = weights.copy()
+
     N = weights.shape[0]
-    tmask = (weights != 0).astype(int)
+    e8 = int(0.8*N)
+
+    weights_tr = np.zeros((M, N, N))
+    weights_tr[0, :, :] = weights[:, :]
 
     spikes = [ [] for i in range(N) ]
     refraction = np.zeros((N))
@@ -218,6 +227,39 @@ def simulate_network(V, current, weights, delays):
         # if np.sum(spikers)!=0:
         #     print("spikers:", spikers)
 
+        # learning rule application only for excitatory neurons
+        for spiker in np.where(spikers)[0]:
+            # only first e8
+            if spiker >= e8:
+                continue
+
+            # for upstream neurons
+            r_ispikes = [j for j in ispikes[spiker] if j < i][::-1]
+            r_ispikers = ispikers[spiker][:len(r_ispikes)][::-1]
+            upstreamers = tmask[:, spiker]
+            for upstreamer in np.where(upstreamers)[0]:
+                try:
+                    tlast = r_ispikes[r_ispikers.index(upstreamer)]
+                    weights[upstreamer, spiker] += \
+                        weights[upstreamer, spiker] * Aup * np.exp(-(i-tlast)/tauL)
+                except ValueError as e:
+                    pass
+
+            # for downstream neurons
+            downstreamers = tmask[spiker, :]
+            for downstreamer in np.where(downstreamers)[0]:
+                tlast = spikes[downstreamer][-1:]
+                if len(tlast) != 0:
+                    weights[spiker, downstreamer] += \
+                        weights[spiker, downstreamer] * Adown * np.exp(-(i+delays[spiker, downstreamer]-tlast[0])/tauL)
+                else:
+                    pass
+        # weight tracking
+        weights_tr[i, :, :] = weights[:, :]
+
+
+        # transmission of spikes forward
+        tmask = (weights != 0).astype(int)
         for post in range(N):
             rev_spikes = tmask[:, post]*spikers
             rev_spikers = np.where(rev_spikes)[0]
@@ -233,12 +275,13 @@ def simulate_network(V, current, weights, delays):
         # print("ispikes:", ispikes)
         # print("ispikers:", ispikers)
 
-    return V, current, spikes
+    return V, current, spikes, weights_tr
 
 def main():
 
-    N = 500
-    # N = 5
+    N = 200
+    w0 = 3000
+    # N = 50
 
     print("Pre compute alpha_tau")
     pre_compute_alpha_tau(tau, taus)
@@ -248,20 +291,21 @@ def main():
     current = get_initial_poisson_currents(N)
 
     print("Network Connections")
-    weights, delays = get_connectivity_matrices(N)
-    # weights, delays = get_connectivity_matrices_P1(N)
+    iweights, delays = get_connectivity_matrices(N, w0, -w0)
+    # iweights, delays = get_connectivity_matrices_P1(N)
 
     V = initalize_V(N, M)
 
-    V, current, spikes = simulate_network(V, current, weights, delays)
+    V, current, spikes, aweights = simulate_network_and_learn(V, current, iweights, delays)
 
-    with open("P2.spikes.pickle", "wb") as f:
-        pickle.dump(spikes, f)
-    with open("P2.spikes.pickle", "rb") as f:
-        spikes = pickle.load(f)
+    with open("P4.spikes.pickle", "wb") as f:
+        pickle.dump([spikes, aweights], f)
+    with open("P4.spikes.pickle", "rb") as f:
+        spikes, aweights = pickle.load(f)
 
-    plot_spikes(spikes, "P2.0.tr2.png")
-    plot_nspikes_t(spikes, "P2.1.tr2.png", "P2.2.tr2.png")
+    plot_spikes(spikes, "P4.0.png")
+    plot_nspikes_t(spikes, "P4.1.png", "P4.2.png")
+    plot_weights_trace(aweights, "P4.3.png")
     # for i in range(N):
         # plot_curr_and_resp(current[i], V[i], "P2.ex.%d.png" % i)
 
@@ -294,6 +338,14 @@ def plot_nspikes_t(spikes, filen1, filen2):
     plt.figure()
     plt.plot(np.arange(ridata.shape[0])*delta, ridata)
     plt.savefig(filen2)
+
+def plot_weights_trace(weights, filen):
+
+    data = np.mean(weights, axis=(1, 2))
+
+    plt.figure()
+    plt.plot(np.arange(data.shape[0])*delta, data)
+    plt.savefig(filen)
 
 def plot_curr_and_resp(current, V, filen):
 

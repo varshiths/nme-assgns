@@ -1,148 +1,154 @@
-# Homework 2
+# Homework 3
 ## EE746 Neuromorphic Engineering
 ### Autumn 2018
 
 Varshith Sreeramdass
 150050084
 
-Vikash Kumar Meena
-15b030017
-
 Note:  
 To run any of files `p1.py`, `p2.py`, `p3.py`, `p4.py`, `p5.py`:  
 ```
 $ python3 <file>
 ``` 
+The seed here is set to 3. Change the seed to observe effect across random initializations.  
 
 #### Q1
 
-The seed here is set to 3. Change the seed to observe effect across random initializations.  
-
 a.  
 
-The time instants when the stimuli occur are:  
-0.0218 0.2221 0.2429 0.2473 0.2542 0.404  
+The connectivity is stored in a matrix sized NxN in the variable named `weights` in the file `p1.py`.  
 
 b.  
 
-The response for second setting is in `Q1.b.png`.
+Case 1:  
+Neuron a:  
+![Response](P1.1.0.png ){width=75%}  
 
-![Response](Q1.b.png ){width=75%}
+Neuron b:  
+![Response](P1.1.1.png ){width=75%}  
 
-Number of spikes are:  
-11  
+Neuron c:  
+![Response](P1.1.2.png ){width=75%}  
+
+Neuron d:  
+![Response](P1.1.3.png ){width=75%}  
+
+Neuron e:  
+![Response](P1.1.4.png ){width=75%}  
+
+Case 2:  
+Neuron a:  
+![Response](P1.2.0.png ){width=75%}  
+
+Neuron b:  
+![Response](P1.2.1.png ){width=75%}  
+
+Neuron c:  
+![Response](P1.2.2.png ){width=75%}  
+
+Neuron d:  
+![Response](P1.2.3.png ){width=75%}  
+
+Neuron e:  
+![Response](P1.2.4.png ){width=75%}  
 
 
 #### Q2
 
-The seed here is set to 0. Change the seed to observe effect across random initializations.  
-
 a.  
 
-The response for first setting is in `Q2.a.png`.
-
-![Response](Q2.a.png ){width=75%}
-
-Number of spikes are:  
-0  
+Raster Plot:  
+![Response](P2.0.png ){width=75%}  
 
 b.  
 
-The response for second setting is in `Q2.b.png`.
-
-![Response](Q2.b.png ){width=75%}
-
-Number of spikes are:  
-11  
-
-#### Q3
-
-The seed here is set to 2. Change the seed to observe effect across random initializations.  
-a.  
-
-The weights for the tasks are contained in the variable `wsn` at the end of the code block.  
-
-The response after causing spikes is in `Q3.a.png`.
-
-![Response](Q3.a.png ){width=75%}
-
-Number of iterations are:  
-4  
-
-b.  
-
-The scatter plot for $\delta w_{k}, \delta t_{k}$ across synapses and iterations is available in `Q3.b.png`  
-
-![Scatter Plot](Q3.b.png ){width=75%}
-
-
-#### Q4
-
-The seed here is set to 2. Change the seed to observe effect across random initializations.  
-
-a.  
-
-The weights for the tasks are contained in the variable `wsn` at the end of the code block.  
-
-The response after killing spikes is in `Q4.a.png`.
-
-![Response](Q4.a.png ){width=75%}
-
-Average number of iterations are:  
-2.5  
-
-The above result are after running for the seeds:  
-2, 0, 100, 20, 25, 30  
-2.5 is average of 3, 2, 3, 3, 2, 2  
-
-
-b.  
-
-The scatter plot for $\delta w_{k}, \delta t_{k}$ across synapses and iterations is available in `Q4.b.png`  
-
-![Scatter Plot](Q4.b.png ){width=75%}
-
-
-#### Q5
-
-The weights for any of the tasks are contained in the variable `wsn` at the end of the code block for that task.  
-The seed here is set. Change the seed to observe effect across random initializations.  
-
-a.
-
-The response for S1 is in `Q5.a.1.png`.  
-The response for S2 is in `Q5.a.2.png`.  
-
-S1 Response
-![S1 Response](Q5.a.1.png ){width=75%}
-
-S2 Response
-![S2 Response](Q5.a.2.png ){width=75%}
-
-b.
-
-The response for S2 with changed weights after removing the spikes is in the file `Q5.b.2.png`  
-
-S2 Response after train
-![S2 Response after train](Q5.b.2.png ){width=75%}
+Spikes by excitatory neurons:  
+![Response](P2.1.png ){width=75%}  
+Spikes by inhibitory neurons:  
+![Response](P2.2.png ){width=75%}  
 
 c.  
 
-The response for S1 and S2 after causing spikes for S1 and removing spikes for S2 are as follows  
+The network displays an oscillation with the excitatory and inhibitory neurons oscillating aternatively.  
+This seems to arise out of the fact that the system is attempting to enter into an equilibrium.
 
-S1 Response after train
-![S1 Response after train](Q5.c.1.png ){width=75%}
+It is when the excitatory neurons spike, that the entire system tends to spike. This is seen as a vertical bar in the raster plot.  
+When the inhibitory neurons spike, the entire system tends to depress. This is seen as the empty space between two bars in the raster plot, correlated with the peaks in the $R_{i}(t)$ plot.  
 
-S2 Response after train
-![S2 Response after train](Q5.c.2.png ){width=75%}
+#### Q3
+
+a.  
+
+Network with 200 Neurons:  
+For $w_{e} = -w_{i} = 3000$:  
+
+Raster Plot:  
+![Response](P3_3000_1.0.png ){width=75%}  
+
+Spikes by excitatory neurons:  
+![Response](P3_3000_1.1.png ){width=75%}  
+Spikes by inhibitory neurons:  
+![Response](P3_3000_1.2.png ){width=75%}  
+
+b.  
+
+As the weight changes, the total number of spikes does change, but this does not make the network behave as in the larger network, as both the excitatory and inhibitory spikes increase/decrease by the same amount.  
+
+For $w_{e} = -w_{i} = 1000$:  
+Raster Plot:  
+![Response](P3_1000_1.0.png ){width=75%}  
+
+Spikes by excitatory neurons:  
+![Response](P3_1000_1.1.png ){width=75%}  
+Spikes by inhibitory neurons:  
+![Response](P3_1000_1.2.png ){width=75%}  
+
+For $w_{e} = -w_{i} = 2000$:  
+Raster Plot:  
+![Response](P3_2000_1.0.png ){width=75%}  
+
+Spikes by excitatory neurons:  
+![Response](P3_2000_1.1.png ){width=75%}  
+Spikes by inhibitory neurons:  
+![Response](P3_2000_1.2.png ){width=75%}  
+
+c.  
+
+The net inhibition in the network must be increased in order to observe oscillatory behaviour. This is evident from the raster plots.  
 
 d.  
 
-The response for S1 and S2 after removing spikes for S1 and causing spikes for S2 are as follows  
+Since the overall inhibition in the network must increase, the $w_{i}$ is increased in magnitude.  
 
-S1 Response after train
-![S1 Response after train](Q5.d.1.png ){width=75%}
+For $w_{e} = - \gamma w_{i} = 1500$ where $\gamma = 0.6$:  
+Raster Plot:  
+![Response](P3_1500_0_6.0.png ){width=75%}  
 
-S2 Response after train
-![S2 Response after train](Q5.d.2.png ){width=75%}
+Spikes by excitatory neurons:  
+![Response](P3_1500_0_6.1.png ){width=75%}  
+Spikes by inhibitory neurons:  
+![Response](P3_1500_0_6.2.png ){width=75%}  
+
+#### Q4
+
+a.  
+
+Implementation in the file `p4.py`.  
+
+b.  
+
+The raster plot, and spike rates of excitatory and inhibitory neurons are in the files `P4.0.png`, `P4.1.png` and `P4.2.png` respectively.  
+
+Variation in the average excitatory synaptic strength:  
+![Response](P4.3.png ){width=75%}  
+
+#### Q5
+
+a.  
+
+
+
+b.  
+
+c.  
 

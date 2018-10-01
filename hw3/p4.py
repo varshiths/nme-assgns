@@ -176,7 +176,7 @@ def get_current_due_to_postspikes(weights, ispikes, ispikers, t):
         # adjusted = [ (spk, spkr) for spk, spkr in zip(ispikes[pn], ispikers[pn]) if spk < t ]
         adjusted = [ (spk, spkr) for spk, spkr in zip(ispikes[pn], ispikers[pn]) if spk < t and t-frame < spk]
 
-        # adjusted = adjusted[-20:]
+        adjusted = adjusted[-5:]
 
         current[pn] = Io * sum([
                 weights[spiker][pn] * \

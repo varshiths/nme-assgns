@@ -103,14 +103,7 @@ Spikes by excitatory neurons:
 Spikes by inhibitory neurons:  
 ![Response](P3_1000_1.2.png ){width=75%}  
 
-For $w_{e} = -w_{i} = 2000$:  
-Raster Plot:  
-![Response](P3_2000_1.0.png ){width=75%}  
-
-Spikes by excitatory neurons:  
-![Response](P3_2000_1.1.png ){width=75%}  
-Spikes by inhibitory neurons:  
-![Response](P3_2000_1.2.png ){width=75%}  
+For $w_{e} = -w_{i} = 4000$ the number of spikes are even more and the oscillatory trend does not occur.  
 
 c.  
 
@@ -154,9 +147,9 @@ Variation in the average excitatory synaptic strength:
 
 a.  
 
-The STDP rules considered are:  
-1. rule1  
-2. rule2  
+The additional rules considered are:  
+1. Upstream excitatory synapses exhibit anti-STDP  
+2. Downstream inhibitory synapses exhibit STDP  
 
 Raster Plot:  
 ![Response](P5_1000.0.png ){width=75%}  

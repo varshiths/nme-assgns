@@ -177,7 +177,7 @@ def get_current_due_to_postspikes(weights, ispikes, ispikers, t):
         # adjusted = [ (spk, spkr) for spk, spkr in zip(ispikes[pn], ispikers[pn]) if spk < t ]
         adjusted = [ (spk, spkr) for spk, spkr in zip(ispikes[pn], ispikers[pn]) if spk < t and t-frame < spk]
 
-        # adjusted = adjusted[-20:]
+        adjusted = adjusted[-5:]
 
         current[pn] = Io * sum([
                 weights[spiker][pn] * \
@@ -240,8 +240,9 @@ def simulate_network_and_learn(V, current, weights, delays):
             upstreamers = tmask[:, spiker]
             for upstreamer in np.where(upstreamers)[0]:
                 try:
+                    mulp = -1 if upstreamer < e8 else 1
                     tlast = r_ispikes[r_ispikers.index(upstreamer)]
-                    weights[upstreamer, spiker] += \
+                    weights[upstreamer, spiker] += mulp * \
                         weights[upstreamer, spiker] * Aup * np.exp(-(i-tlast)/tauL)
                 except ValueError as e:
                     pass
@@ -251,7 +252,8 @@ def simulate_network_and_learn(V, current, weights, delays):
             for downstreamer in np.where(downstreamers)[0]:
                 tlast = spikes[downstreamer][-1:]
                 if len(tlast) != 0:
-                    weights[spiker, downstreamer] += \
+                    mulp = -1 if downstreamer >= e8 else 1
+                    weights[spiker, downstreamer] += mulp * \
                         weights[spiker, downstreamer] * Adown * np.exp(-(i+delays[spiker, downstreamer]-tlast[0])/tauL)
                 else:
                     pass

@@ -170,7 +170,7 @@ def get_current_due_to_postspikes(weights, ispikes, ispikers, t):
         # adjusted = [ (spk, spkr) for spk, spkr in zip(ispikes[pn], ispikers[pn]) if spk < t ]
         adjusted = [ (spk, spkr) for spk, spkr in zip(ispikes[pn], ispikers[pn]) if spk < t and t-frame < spk]
 
-        adjusted = adjusted[-20:]
+        adjusted = adjusted[-10:]
 
         current[pn] = Io * sum([
                 weights[spiker][pn] * \
@@ -238,7 +238,8 @@ def main():
     N = 200
     # w0 = 3000; gamma = 1.0
     # w0 = 2000; gamma = 1.0
-    w0 = 1500; gamma = 0.6
+    # w0 = 1500; gamma = 0.6
+    w0 = 1500; gamma = 0.4
     # N = 5
 
     print("Pre compute alpha_tau")

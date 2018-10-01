@@ -113,14 +113,14 @@ d.
 
 Since the overall inhibition in the network must increase, the $w_{i}$ is increased in magnitude.  
 
-For $w_{e} = - \gamma w_{i} = 1500$ where $\gamma = 0.6$:  
+For $w_{e} = - \gamma w_{i} = 1500$ where $\gamma = 0.4$:  
 Raster Plot:  
-![Response](P3_1500_0_6.0.png ){width=75%}  
+![Response](P3_1500_0_4.0.png ){width=75%}  
 
 Spikes by excitatory neurons:  
-![Response](P3_1500_0_6.1.png ){width=75%}  
+![Response](P3_1500_0_4.1.png ){width=75%}  
 Spikes by inhibitory neurons:  
-![Response](P3_1500_0_6.2.png ){width=75%}  
+![Response](P3_1500_0_4.2.png ){width=75%}  
 
 #### Q4
 
@@ -151,8 +151,15 @@ The additional rules considered are:
 1. Upstream excitatory synapses exhibit anti-STDP  
 2. Downstream inhibitory synapses exhibit STDP  
 
+b.  
+
+T = 1000ms:  
 Raster Plot:  
 ![Response](P5_1000.0.png ){width=75%}  
+
+c.  
+
+T = 1000ms:  
 Spikes by excitatory neurons:  
 ![Response](P5_1000.1.png ){width=75%}  
 Spikes by inhibitory neurons:  
@@ -160,18 +167,3 @@ Spikes by inhibitory neurons:
 
 Variation in the average excitatory synaptic strength:  
 ![Response](P5_1000.3.png ){width=75%}  
-
-b.  
-
-Raster Plot:  
-![Response](P5_2000.0.png ){width=75%}  
-
-c.  
-
-Spikes by excitatory neurons:  
-![Response](P5_2000.1.png ){width=75%}  
-Spikes by inhibitory neurons:  
-![Response](P5_2000.2.png ){width=75%}  
-
-Variation in the average excitatory synaptic strength:  
-![Response](P5_2000.3.png ){width=75%}  

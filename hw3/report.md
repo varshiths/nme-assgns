@@ -137,7 +137,15 @@ Implementation in the file `p4.py`.
 
 b.  
 
-The raster plot, and spike rates of excitatory and inhibitory neurons are in the files `P4.0.png`, `P4.1.png` and `P4.2.png` respectively.  
+The raster plot, and spike rates of excitatory and inhibitory neurons in a learning setup for configuration in 3(a) are in the files `P4.0.png`, `P4.1.png` and `P4.2.png` respectively.  
+
+Raster Plot:  
+![Response](P4.0.png ){width=75%}  
+
+Spikes by excitatory neurons:  
+![Response](P4.1.png ){width=75%}  
+Spikes by inhibitory neurons:  
+![Response](P4.2.png ){width=75%}  
 
 Variation in the average excitatory synaptic strength:  
 ![Response](P4.3.png ){width=75%}  
@@ -146,9 +154,31 @@ Variation in the average excitatory synaptic strength:
 
 a.  
 
+The STDP rules considered are:  
+1. rule1  
+2. rule2  
 
+Raster Plot:  
+![Response](P5_1000.0.png ){width=75%}  
+Spikes by excitatory neurons:  
+![Response](P5_1000.1.png ){width=75%}  
+Spikes by inhibitory neurons:  
+![Response](P5_1000.2.png ){width=75%}  
+
+Variation in the average excitatory synaptic strength:  
+![Response](P5_1000.3.png ){width=75%}  
 
 b.  
 
+Raster Plot:  
+![Response](P5_2000.0.png ){width=75%}  
+
 c.  
 
+Spikes by excitatory neurons:  
+![Response](P5_2000.1.png ){width=75%}  
+Spikes by inhibitory neurons:  
+![Response](P5_2000.2.png ){width=75%}  
+
+Variation in the average excitatory synaptic strength:  
+![Response](P5_2000.3.png ){width=75%}  
